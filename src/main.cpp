@@ -9,6 +9,7 @@
 #include <ArduinoJson.h>
 #include <SinricPro.h>
 #include <SinricProLight.h>
+#include <WebServer.h>
 #include "FS.h"
 #include "config.h"
 
@@ -23,6 +24,8 @@ Adafruit_NeoPixel pantalla = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ
 
 const char* time_api_url = "http://worldtimeapi.org/api/timezone/America/Mexico_City";
 
+WebServer server(80);
+
 String hora_actual = "";
 int diaSemana = 0;
 int rojo = 0;
@@ -33,6 +36,131 @@ int tempBrillo = 5;
 static unsigned long twoPoints = 0;
 static unsigned long animacion = 0;
 bool twoP = true;
+int numAnim = 1;
+int anim = 4;
+
+int figuras[12][SCREEN_ROWS][SCREEN_ROWS] = {
+  { 
+    {0  , 0  , 255, 255, 255, 255, 0  , 0  },
+    {0  , 255, 0  , 0  , 0  , 0  , 255, 0  },
+    {255, 0  , 255, 0  , 0  , 0  , 0  , 255},
+    {255, 0  , 255, 0  , 0  , 0  , 0  , 255},
+    {255, 0  , 0  , 255, 0  , 0  , 0  , 255},
+    {255, 0  , 0  , 0  , 255, 255, 0  , 255},
+    {0  , 255, 0  , 0  , 0  , 0  , 255, 0  },
+    {0  , 0  , 255, 255, 255, 255, 0  , 0  },
+  },
+  { 
+    {0  , 0  , 255, 255, 255, 255, 0  , 0  },
+    {0  , 255, 255, 255, 255, 255, 255, 0  },
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {0  , 255, 255, 255, 255, 255, 255, 0  },
+    {0  , 0  , 255, 255, 255, 255, 0  , 0  },
+  },
+  { 
+    {0  , 0  , 255, 255, 255, 255, 0  , 0  },
+    {0  , 255, 0  , 0  , 0  , 0  , 255, 0  },
+    {255, 0  , 255, 0  , 0  , 0  , 0  , 255},
+    {255, 0  , 255, 0  , 0  , 0  , 0  , 255},
+    {255, 0  , 0  , 255, 0  , 0  , 0  , 255},
+    {255, 0  , 0  , 0  , 255, 255, 0  , 255},
+    {0  , 255, 0  , 0  , 0  , 0  , 255, 0  },
+    {0  , 0  , 255, 255, 255, 255, 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 255, 255, 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 255, 255, 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 255, 255, 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 255, 255, 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 0  , 0  , 0  },
+  },
+  { 
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 255, 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 255, 0  , 0  , 255, 255, 0  , 0  },
+    {0  , 255, 0  , 255, 0  , 0  , 255, 0  },
+    {0  , 255, 0  , 255, 0  , 0  , 255, 0  },
+    {0  , 255, 0  , 255, 0  , 0  , 255, 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 255, 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 255, 0  , 0  , 255, 255, 0  , 0  },
+    {0  , 255, 0  , 255, 0  , 0  , 255, 0  },
+    {0  , 255, 0  , 255, 0  , 0  , 255, 0  },
+    {0  , 255, 0  , 255, 0  , 0  , 255, 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 255, 255, 255, 255, 255, 255, 0  },
+    {255, 0  , 255, 255, 255, 255, 0  , 255},
+    {255, 255, 0  , 255, 255, 0  , 255, 255},
+    {255, 255, 255, 0  , 0  , 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {125, 255, 255, 255, 255, 255, 255, 125},
+    {255, 125, 255, 255, 255, 255, 125, 255},
+    {255, 255, 125, 255, 255, 125, 255, 255},
+    {255, 255, 255, 125, 125, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {255, 255, 255, 255, 255, 255, 255, 255},
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+};
 
 int numeros[11][NUM_ROWS][NUM_COLS] = {
   // Definición de los números y los dos puntos
@@ -126,6 +254,48 @@ int numeros[11][NUM_ROWS][NUM_COLS] = {
   },
 };
 
+void handleAction() {
+  // Verificar si el parámetro 'msg' está presente en la URL
+  if (server.hasArg("msg")) {
+    String msg = server.arg("msg");
+    
+    
+    // Aquí puedes añadir el código para realizar una acción basada en el valor del parámetro
+    String message = "Mensaje recibido: " + msg;
+
+    if (msg == "whatsapp") {
+      animacion = 0;
+      anim = 0;
+      message = "notificación de " + msg + " recibida";
+    }else{
+      if (msg == "facebook") {
+        animacion = 0;
+        anim = 1;
+        message = "notificación de " + msg + " recibida";
+      }else{
+        if (msg == "linkedin") {
+          animacion = 0;
+          anim = 2;
+          message = "notificación de " + msg + " recibida";
+        }else{
+          if (msg == "correo") {
+            animacion = 0;
+            anim = 3;
+            message = "notificación de " + msg + " recibida";
+          }
+        }
+      }
+    }
+    
+
+    // Responder con el mensaje personalizado
+    server.send(200, "text/plain", message);
+  } else {
+    // Si el parámetro 'msg' no está presente, enviar un mensaje de error
+    server.send(400, "text/plain", "Parámetro 'msg' faltante");
+  }
+}
+
 // Función para mostrar un número en una posición específica en la pantalla
 void showNumber(int number, int startX, int startY, int Red, int Green, int Blue) {
   for (int x = 0; x < NUM_ROWS; x++) {
@@ -139,6 +309,25 @@ void showNumber(int number, int startX, int startY, int Red, int Green, int Blue
         }
         if (x + startX < 8 && x + startX >= 0) {
           pantalla.setPixelColor(ledIndex, pantalla.Color(Red, Green, Blue));
+        }
+      }
+    }
+  }
+}
+
+// Función para mostrar un número en una posición específica en la pantalla
+void showFigura(int number, int startX, int startY) {
+  for (int x = 0; x < SCREEN_ROWS; x++) {
+    for (int y = 0; y < SCREEN_ROWS; y++) {
+      if (figuras[number*3][x][y] != 0 || figuras[number*3+1][x][y] != 0 || figuras[number*3+2][x][y] != 0) {
+        int ledIndex = 0;
+        if ((startY + y) % 2 == 0) {
+          ledIndex = (x + startX) + (startY + y) * SCREEN_ROWS;
+        } else {
+          ledIndex = (SCREEN_ROWS - x - 1 - startX) + (startY + y) * SCREEN_ROWS;
+        }
+        if (x + startX < 8 && x + startX >= 0) {
+          pantalla.setPixelColor(ledIndex, pantalla.Color(figuras[number*3][x][y], figuras[number*3+1][x][y], figuras[number*3+2][x][y]));
         }
       }
     }
@@ -166,7 +355,7 @@ void obtenerHora() {
 }
 
 // Función para mostrar la hora en la pantalla LED
-void mostrarHora(int y) {
+void mostrarHora(int y, int x) {
   if (hora_actual.length() == 5) {
     int hh = hora_actual.substring(0, 2).toInt();
     if (hh > 12) {
@@ -179,16 +368,16 @@ void mostrarHora(int y) {
       twoPoints = millis();
     }
     
-    showNumber(hh / 10, y, 7, 255, 255, 255); // Primera cifra de la hora
-    showNumber(hh % 10, y, 11, 255, 255, 255); // Segunda cifra de la hora
-    if (twoP && y == 1)
+    showNumber(hh / 10, y, 7 + x, 255, 255, 255); // Primera cifra de la hora
+    showNumber(hh % 10, y, 11 + x, 255, 255, 255); // Segunda cifra de la hora
+    if (twoP)
     {
-      showNumber(10, y, 14, 255, 255, 255); // Dos puntos
+      showNumber(10, y, 14 + x, 255, 255, 255); // Dos puntos
     }
-    showNumber(mm / 10, y, 17, 255, 255, 255); // Primera cifra de los minutos
-    showNumber(mm % 10, y, 21, 255, 255, 255); // Segunda cifra de los minutos
+    showNumber(mm / 10, y, 17 + x, 255, 255, 255); // Primera cifra de los minutos
+    showNumber(mm % 10, y, 21 + x, 255, 255, 255); // Segunda cifra de los minutos
 
-    if (y == 1)
+    if (y == 1 && x == 0)
     {
       int rTemp;
       int vTemp;
@@ -201,9 +390,9 @@ void mostrarHora(int y) {
           aTemp = azul;
         }else
         {
-          rTemp = rojo/3;
-          vTemp = verde/3;
-          aTemp = azul/3;
+          rTemp = rojo/4;
+          vTemp = verde/4;
+          aTemp = azul/4;
         }
         for (int j = 0; j < 3; j++) {
           if (j == 1) {
@@ -221,10 +410,9 @@ void mostrarHora(int y) {
 bool onPowerState(const String &deviceId, bool &state) {
   Serial.printf("Device %s power state changed to %s\n", deviceId.c_str(), state ? "on" : "off");
   if (state) {
-    brillo = tempBrillo;
+    brillo = 5;
     pantalla.setBrightness(brillo);
   } else {
-    tempBrillo = brillo;
     brillo = 0;
     pantalla.setBrightness(brillo);
   }
@@ -259,9 +447,61 @@ void setupSinricPro() {
   SinricPro.begin(API_KEY, APP_SECRET);
 }
 
-void animacionAleatoria() {
-  
+void animIntermedio(int numAnim){
+  static int step = 0;
+  static unsigned long lastStepTime = 0;
+  const unsigned long stepDelay = 10;  // Delay between steps in milliseconds
+
+  if (millis() - lastStepTime > stepDelay) {
+    switch (numAnim)
+    {
+    case 4:
+      lastStepTime = millis();
+      animacion = millis();
+      break;
+    
+    
+    default:
+      step++;
+      if (step <= 10)
+      {
+        pantalla.clear();
+        mostrarHora(1,0 - step/2);
+        showFigura(numAnim,0,32 - step);
+        pantalla.show();
+      }else{
+        if (step <= 100)
+        {
+          pantalla.clear();
+          mostrarHora(1,-5);
+          showFigura(numAnim,0,22);
+          pantalla.show();
+        }else{
+          if (step <= 110)
+          {
+            int temp = step - 100;
+            pantalla.clear();
+            mostrarHora(1,-5 + (temp/2));
+            showFigura(numAnim,0,22 + temp);
+            pantalla.show();
+          }else{
+            animacion = millis();
+            step = 0;
+            anim = 4;
+          }
+        }
+      }
+      lastStepTime = millis();
+      break;
+    }
+    
+  }
 }
+
+void animacionAleatoria() {
+  animIntermedio(anim);
+}
+
 
 void setup() {
   Serial.begin(115200);
@@ -272,12 +512,16 @@ void setup() {
     Serial.println("Conectando a WiFi...");
   }
   Serial.println("Conectado a WiFi");
+  Serial.print("Dirección IP: ");
+  Serial.println(WiFi.localIP());
 
   pantalla.begin();
   pantalla.setBrightness(brillo);
   pantalla.clear();
   pantalla.show();
 
+  server.on("/action", handleAction);
+  server.begin();
   setupSinricPro(); // Configurar SinricPro
 
   obtenerHora(); // Obtener la hora al inicio
@@ -285,17 +529,18 @@ void setup() {
 
 void loop() {
   SinricPro.handle(); // Manejar las comunicaciones con SinricPro
+  server.handleClient();
 
   // Obtener y mostrar la hora cada minuto
   static unsigned long lastTime = 0;
   if (millis() - lastTime > 100) {
     lastTime = millis();
-    if (millis() - animacion > 10000)
+    if (millis() - animacion > 20000)
     {
       animacionAleatoria();
     }else{
       pantalla.clear();
-      mostrarHora(1);
+      mostrarHora(1,0);
       pantalla.show();
     }
   }
