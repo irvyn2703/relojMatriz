@@ -38,8 +38,10 @@ static unsigned long animacion = 0;
 bool twoP = true;
 int numAnim = 1;
 int anim = 4;
+int intervaloAnimaciones = 20000;
 
-int figuras[12][SCREEN_ROWS][SCREEN_ROWS] = {
+int figuras[18][SCREEN_ROWS][SCREEN_ROWS] = {
+  // whatsapp
   { 
     {0  , 0  , 255, 255, 255, 255, 0  , 0  },
     {0  , 255, 0  , 0  , 0  , 0  , 255, 0  },
@@ -70,6 +72,7 @@ int figuras[12][SCREEN_ROWS][SCREEN_ROWS] = {
     {0  , 255, 0  , 0  , 0  , 0  , 255, 0  },
     {0  , 0  , 255, 255, 255, 255, 0  , 0  },
   },
+  // facebook
   { 
     {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
     {0  , 0  , 0  , 0  , 255, 255, 255, 0  },
@@ -100,6 +103,7 @@ int figuras[12][SCREEN_ROWS][SCREEN_ROWS] = {
     {255, 255, 255, 255, 255, 255, 255, 255},
     {255, 255, 255, 255, 255, 255, 255, 255},
   },
+  // linkedin
   { 
     {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
     {0  , 255, 0  , 0  , 0  , 0  , 0  , 0  },
@@ -130,6 +134,7 @@ int figuras[12][SCREEN_ROWS][SCREEN_ROWS] = {
     {255, 255, 255, 255, 255, 255, 255, 255},
     {255, 255, 255, 255, 255, 255, 255, 255},
   },
+  // correo
   { 
     {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
     {0  , 255, 255, 255, 255, 255, 255, 0  },
@@ -158,6 +163,68 @@ int figuras[12][SCREEN_ROWS][SCREEN_ROWS] = {
     {255, 255, 255, 255, 255, 255, 255, 255},
     {255, 255, 255, 255, 255, 255, 255, 255},
     {255, 255, 255, 255, 255, 255, 255, 255},
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  // abeja
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 255, 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 0  , 0  , 0  },
+    {0  , 245, 245, 245, 50 , 245, 50 , 0  },
+    {0  , 245, 50 , 245, 50 , 245, 50 , 50 },
+    {0  , 245, 245, 245, 50 , 245, 50 , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 255, 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 0  , 0  , 0  },
+    {0  , 211, 211, 211, 50 , 211, 50 , 0  },
+    {0  , 211, 50 , 211, 50 , 211, 50 , 50 },
+    {0  , 211, 211, 211, 50 , 211, 50 , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 255, 255, 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 0  , 0  , 0  },
+    {0  , 90 , 90 , 90 , 50 , 90 , 50 , 0  },
+    {0  , 90 , 50 , 90 , 50 , 90 , 50 , 50 },
+    {0  , 90 , 90 , 90 , 50 , 90 , 50 , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  // abeja 2
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 255, 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 255, 0  , 0  },
+    {0  , 245, 245, 245, 50 , 245, 50 , 0  },
+    {0  , 245, 50 , 245, 50 , 245, 50 , 50 },
+    {0  , 245, 245, 245, 50 , 245, 50 , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 255, 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 255, 0  , 0  },
+    {0  , 211, 211, 211, 50 , 211, 50 , 0  },
+    {0  , 211, 50 , 211, 50 , 211, 50 , 50 },
+    {0  , 211, 211, 211, 50 , 211, 50 , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+  },
+  { 
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
+    {0  , 0  , 0  , 0  , 0  , 255, 0  , 0  },
+    {0  , 0  , 0  , 255, 255, 255, 0  , 0  },
+    {0  , 90 , 90 , 90 , 50 , 90 , 50 , 0  },
+    {0  , 90 , 50 , 90 , 50 , 90 , 50 , 50 },
+    {0  , 90 , 90 , 90 , 50 , 90 , 50 , 0  },
     {0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  },
   },
 };
@@ -447,6 +514,46 @@ void setupSinricPro() {
   SinricPro.begin(API_KEY, APP_SECRET);
 }
 
+void animAbeja(int &step, unsigned long &lastStepTime) {
+    step++;
+    if (step <= 10) {
+        pantalla.clear();
+        mostrarHora(1, 0 - step*2);
+        pantalla.show();
+    } else {
+        if (step <= 70) {
+            int temp = step - 10;
+            pantalla.clear();
+            if (temp % 3 == 0){
+              showFigura(4,0,0 + (29 - temp));
+              showFigura(4,-3,7 + (29 - temp));
+              showFigura(4,1,14 + (29 - temp));
+              showFigura(4,-1,22 + (29 - temp));
+            }else{
+              showFigura(5,0,0 + (29 - temp));
+              showFigura(5,-3,7 + (29 - temp));
+              showFigura(5,1,14 + (29 - temp));
+              showFigura(5,-1,22 + (29 - temp));
+            }
+            
+            pantalla.show();
+        } else {
+            if (step <= 80) {
+                int temp = step - 70;
+                pantalla.clear();
+                mostrarHora(1, 20 - temp*2);
+                pantalla.show();
+            } else {
+                animacion = millis();
+                step = 0;
+                anim = random(4, 4 + numAnim);
+                intervaloAnimaciones = random(20000, 900000);
+            }
+        }
+    }
+    lastStepTime = millis();
+}
+
 void animIntermedio(int numAnim){
   static int step = 0;
   static unsigned long lastStepTime = 0;
@@ -456,8 +563,7 @@ void animIntermedio(int numAnim){
     switch (numAnim)
     {
     case 4:
-      lastStepTime = millis();
-      animacion = millis();
+      animAbeja(step, lastStepTime);
       break;
     
     
@@ -487,7 +593,8 @@ void animIntermedio(int numAnim){
           }else{
             animacion = millis();
             step = 0;
-            anim = 4;
+            anim = random(4, 4 + numAnim);
+            intervaloAnimaciones = random(20000, 900000);
           }
         }
       }
@@ -525,6 +632,7 @@ void setup() {
   setupSinricPro(); // Configurar SinricPro
 
   obtenerHora(); // Obtener la hora al inicio
+  randomSeed(analogRead(0));
 }
 
 void loop() {
@@ -535,7 +643,7 @@ void loop() {
   static unsigned long lastTime = 0;
   if (millis() - lastTime > 100) {
     lastTime = millis();
-    if (millis() - animacion > 20000)
+    if (millis() - animacion > intervaloAnimaciones)
     {
       animacionAleatoria();
     }else{
